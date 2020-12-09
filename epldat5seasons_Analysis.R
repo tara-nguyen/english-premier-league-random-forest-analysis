@@ -246,6 +246,12 @@ away_res_tab <- xtabs(~ awayteam + fulltime_res, matchstats)
 away_res_seasonavg <- away_res_tab / as.vector(n_seasons_byteam)
 head(away_res_seasonavg)
 
+res_seasonavg <- cbind(home_res_seasonavg[, 1] + away_res_seasonavg[, 3],
+	home_res_seasonavg[, 2] + away_res_seasonavg[, 2],
+	home_res_seasonavg[, 3] + away_res_seasonavg[, 1])
+colnames(res_seasonavg) <- c('win', 'draw', 'loss')
+head(res_seasonavg)
+
 ## season-average number of times each team scored/conceded first, grouped by full-time results
 
 home_sf_res_tab <- xtabs(~ hometeam + scoredfirst + fulltime_res, 
@@ -652,7 +658,7 @@ dev.off()
 ##### PLOTS OF PER-SEASON AND PER-MATCH AVERAGES #####
 
 saveaspng('team-seasonavg-win-draw-loss', w = 1680)
-spineplot(res_tab_byteam[, c('wintotal', 'drawtotal', 'losstotal')],
+spineplot(res_seasonavg[, c('win', 'draw', 'loss')],
 	main = paste('Season-Average Numbers of Wins, Draws, and Losses,',
 	'Grouped by Team'), xlab = 'Team', ylab = 'Full-time result',
 	xaxlabels = teams_abbr, yaxlabels = c('Win', 'Draw', 'Loss'),
@@ -680,7 +686,6 @@ dev.off()
 
 saveaspng('team-matchavg-goals-homevsaway', w = 600)
 par(mfrow = c(1, 2))
-
 with(matchavg, boxplot(homescored, awayscored, col = col_hva,
 	main = 'Average Number of Goals Scored\nat Home and Away Per Match', 
 	cex.axis = .8, names = c('Home', 'Away'), ylab = 'Number of goals', 
@@ -688,7 +693,6 @@ with(matchavg, boxplot(homescored, awayscored, col = col_hva,
 ## add mean points
 points(colMeans(matchavg[, -1])[c('homescored', 'awayscored')], pch = 23,
 	bg = 'red')
-
 with(matchavg, boxplot(homeconceded, awayconceded, col = col_hva,
 	main = 'Average Number of Goals Conceded\nat Home and Away Per Match', 
 	cex.axis = .8, names = c('Home', 'Away'), ylab = 'Number of goals', 
@@ -696,9 +700,7 @@ with(matchavg, boxplot(homeconceded, awayconceded, col = col_hva,
 ## add mean points
 points(colMeans(matchavg[, -1])[c('homeconceded', 'awayconceded')], 
 	pch = 23, bg = 'red')
-
 par(mfrow = c(1, 1))
-
 ## add explanation
 mtext('The red diamond shapes denote the mean points', side = 1, line = 3.5)
 dev.off()
@@ -806,7 +808,7 @@ legend('topright', c('Out-of-bag sample', 'Home-win class', 'Draw class',
 	'Away-win class'), lty = 1:4, col = 1:4)
 dev.off()
 
-## use model rf to predict full-time results in the test set
+## use model rf to classify full-time results in the test set
 
 pred <- predict(rf, testset)
 
@@ -860,8 +862,7 @@ importance[order(importance[, 4], importance[, 5], decreasing = T), ]
 ## variable importance plot
 
 saveaspng('randomforest-varimportance')
-varImpPlot(rf,
-	main = 'Variable Importance in the Random Forest')
+varImpPlot(rf, main = 'Variable Importance in the Random Forest')
 dev.off()
 
 ## how many times each variable was used in the random forest
