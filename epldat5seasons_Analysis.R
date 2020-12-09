@@ -526,7 +526,7 @@ getcol <- function(n, i, alpha = NULL) {
 	if (i %% 9 != 0) {
 		i <- i %% 9
 	}
-	hcl.colors(n, hcl.pals('qualitative')[i])
+	hcl.colors(n, hcl.pals('qualitative')[i], alpha = alpha)
 }
 
 ## colors for plots of home team vs. away team
