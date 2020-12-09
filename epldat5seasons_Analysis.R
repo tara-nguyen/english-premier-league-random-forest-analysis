@@ -3,7 +3,7 @@
 ## AUTHOR: TARA NGUYEN
 ## Part of final project for UCLA Extension course:
 ## Introduction to Data Science
-## Started on December 4th, 2020
+## Completed in December 2020
 
 ########## DATA IMPORT AND CLEANING ##########
 
