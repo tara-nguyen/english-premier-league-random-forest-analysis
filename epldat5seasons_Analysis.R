@@ -533,16 +533,16 @@ getcol <- function(n, i, alpha = NULL) {
 
 col_hva <- getcol(3, 9)[c(1, 3)]
 
+## function for saving plots as png files
+## name: a descriptive name for the file (without the .png extension)
+## w, h: width and height (in pixels) of the image
+
 saveaspng <- function(name, w = 700, h = 480) {
 	filename <- paste0('Plots/', name, '.png')
 	png(filename, w, h)
 }
 
 ##### PLOTS OF CONTIGENCY TABLES #####
-
-## function for saving plots as png files
-## name: a descriptive name for the file (without the .png extension)
-## w, h: width and height (in pixels) of the image; default to 500 each
 
 saveaspng('fulltime-halftime-results')
 par(mfrow = c(1, 3))
