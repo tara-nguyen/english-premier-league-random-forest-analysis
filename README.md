@@ -8,7 +8,7 @@
 
 **Background**: The [English Premier League](https://www.premierleague.com/) (EPL), the top level of competition in English soccer, is one of the most popular and most competitive sport events in the world.
 
-**Data and research question**: In this project I analyzed match statistics (results, number of goals, passing, shooting, etc.) in the EPL from the 2015/2016 season to the 2019/2020 season. The main research question was: **_Which statistics are the most predictive of match results?_**
+**Data and research question**: In this project I analyzed match statistics (results, number of goals, passing, shooting, etc.) and team performances in the EPL from the 2015/2016 season to the 2019/2020 season. The main research question was: **_Which statistics are the most predictive of match results?_**
 
 **Method and findings**: The entire project was done in R. Using the random forest algorithm, I found three features that were the highly important in predicting match results: how many goals the home team scored, how many goals the away team scored, and which team scored first. Other sub-questions such as "Is there really a home-team advantage?" and "Which team formation was the most/least effective?" were also answered along the way.
 
