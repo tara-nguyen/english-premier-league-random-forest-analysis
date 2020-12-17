@@ -18,14 +18,14 @@ For a complete report, see the [wiki page](https://github.com/tara-nguyen/englis
 
 [`Plots`](Plots) - directory for plots created during data visualization
 
+`README.md` - this document you are currently reading
+
 [`epldat5seasons_Analysis.R`](epldat5seasons_Analysis.R) - main R script for data wrangling, visualization, and statistical analyses
 
 [`epldat5seasons_WebScraping.R`](epldat5seasons_WebScraping.R) - R script for scraping original match statistics from webpages
 
 [`matchstats.csv`](matchstats.csv) - final data set
 - **IMPORTANT NOTE**: If you wish to open the file, please make a copy first and open the copy. **Do NOT open the original file** because that might distort the format of some of the values in the file.
-
-`README.md` - this document you are currently reading
 
 ## Usage Note
 
