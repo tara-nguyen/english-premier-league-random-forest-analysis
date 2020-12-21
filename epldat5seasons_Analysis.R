@@ -38,11 +38,12 @@ ht_res <- c('Home lead', 'Draw', 'Away lead')
 
 ## which team scored first
 
-scfst <- c('Home team', 'Neither', 'Away team')
+sf <- c('Home team', 'Neither', 'Away team')
 
 ##### MATCH RECORDS #####
 
 ## most home goals, most away goals
+
 sorthomegoals <- matchstats[order(matchstats$homegoals), c(1:4, 5)]
 tail(sorthomegoals)
 tail(matchstats[order(matchstats$awaygoals), c(1:4, 6)])
@@ -166,23 +167,27 @@ head(badplays_subset[order(totalbadplays), ])
 
 (ft_res_tab <- table(matchstats$fulltime_res))
 (ht_res_tab <- table(matchstats$halftime_res))
-(scfst_tab <- table(matchstats$scoredfirst))
+(sf_tab <- table(matchstats$scoredfirst))
 
 ## full-time results by half-time results
 
-(ht_ft_tab <- xtabs(~ halftime_res + fulltime_res, matchstats))
-apply(ht_ft_tab, 1, prop.table)   ## proportions
+(ft_ht_tab <- xtabs(~ fulltime_res + halftime_res, matchstats))
+(ft_ht_proptab <- prop.table(ft_ht_tab, 2))   ## proportions
 
 ## full-time results by who scored first
 
-(scfst_ft_tab <- xtabs(~ scoredfirst + fulltime_res, matchstats))
-apply(scfst_ft_tab, 1, prop.table)   ## proportions
+(ft_sf_tab <- xtabs(~ fulltime_res + scoredfirst, matchstats))
+(ft_sf_proptab <- prop.table(ft_sf_tab, 2))   ## proportions
 
-## full-time results by goal difference at half-time, by home goals, and by away goals
+## full-time results by goal difference at half-time, by home goals and by away goals
 
-(htgd_ft_tab <- xtabs(~ halftime_goaldiff + fulltime_res, matchstats))
-(homegoals_ft_tab <- xtabs(~ homegoals + fulltime_res, matchstats))
-(awaygoals_ft_tab <- xtabs(~ awaygoals + fulltime_res, matchstats))
+(ft_htgd_tab <- xtabs(~ fulltime_res + halftime_goaldiff, matchstats))
+(ft_htgd_proptab <- prop.table(ft_htgd_tab, 2))   ## proportions
+
+## full-time results by home goals and by away goals
+
+(ft_homegoals_tab <- xtabs(~ fulltime_res + homegoals, matchstats))
+(ft_awaygoals_tab <- xtabs(~ fulltime_res + awaygoals, matchstats))
 
 ## number of unique formations
 
@@ -198,11 +203,11 @@ apply(scfst_ft_tab, 1, prop.table)   ## proportions
 ## number of home wins, draws, and away wins grouped by formation
 ## (only the most used formations included)
 
-ft_form_tab <- xtabs(~ homeformation + fulltime_res + awayformation, 
+ft_form_tab <- xtabs(~ fulltime_res + homeformation + awayformation, 
 	matchstats)
-(ft_form_tab <- ft_form_tab[names(homefm_tab[1:4]), , 
+(ft_form_tab <- ft_form_tab[, names(homefm_tab[1:4]),
 	names(awayfm_tab[1:4])])
-apply(ft_form_tab, c(1, 3), prop.table)   ## proportions
+(ft_form_proptab <- prop.table(ft_form_tab, 2:3))   ## proportions
 
 ##### PER-SEASON AND PER-MATCH AVERAGES AT TEAM LEVEL #####
 
@@ -238,19 +243,19 @@ sum(n_seasons_byteam == 5)   ## 13
 
 ## season-average number of wins/draws/losses
 
-home_res_tab <- xtabs(~ hometeam + fulltime_res, matchstats)
+home_res_tab <- xtabs(~ fulltime_res + hometeam, matchstats)
 home_res_seasonavg <- home_res_tab / as.vector(n_seasons_byteam)
 head(home_res_seasonavg)
 
-away_res_tab <- xtabs(~ awayteam + fulltime_res, matchstats)
+away_res_tab <- xtabs(~ fulltime_res + awayteam, matchstats)
 away_res_seasonavg <- away_res_tab / as.vector(n_seasons_byteam)
 head(away_res_seasonavg)
 
-res_seasonavg <- cbind(home_res_seasonavg[, 1] + away_res_seasonavg[, 3],
-	home_res_seasonavg[, 2] + away_res_seasonavg[, 2],
-	home_res_seasonavg[, 3] + away_res_seasonavg[, 1])
-colnames(res_seasonavg) <- c('win', 'draw', 'loss')
-head(res_seasonavg)
+res_seasonavg <- rbind(home_res_seasonavg[1, ] + away_res_seasonavg[3, ],
+	home_res_seasonavg[2, ] + away_res_seasonavg[2, ],
+	home_res_seasonavg[3, ] + away_res_seasonavg[1, ])
+rownames(res_seasonavg) <- c('win', 'draw', 'loss')
+(res_proptab <- prop.table(res_seasonavg, 2))   ## proportions
 
 ## season-average number of times each team scored/conceded first, grouped by full-time results
 
@@ -271,18 +276,34 @@ concf_win_seasonavg <- rbind(home_sf_res_seasonavg[, 'away', 'home_win'],
 rownames(concf_win_seasonavg) <- c('home_win', 'away_win')
 concf_win_seasonavg
 
+## percentage of times each team won after conceding first
+
+home_concf_win_prop <- prop.table(home_sf_res_tab[, 'away', ], 1)
+away_concf_win_prop <- prop.table(away_sf_res_tab[, 'home', ], 1)
+concf_win_prop <- cbind(home_concf_win_prop[, 'home_win'],
+	away_concf_win_prop[, 'away_win'])
+colnames(concf_win_prop) <- c('Home', 'Away')
+head(concf_win_prop)
+
+## season-average number of losses after scoring first
+
+sf_loss_seasonavg <- rbind(home_sf_res_seasonavg[, 'home', 'away_win'], 
+	away_sf_res_seasonavg[, 'away', 'home_win'])
+rownames(sf_loss_seasonavg) <- c('home_loss', 'away_loss')
+sf_loss_seasonavg
+
 ## season-average number of half-time leads/draws/trails, grouped by full-time results
 
-home_ht_ft_tab <- xtabs(~ hometeam + halftime_res + fulltime_res,
+home_ft_ht_tab <- xtabs(~ hometeam + halftime_res + fulltime_res,
 	matchstats)
-colnames(home_ht_ft_tab) <- c('lead', 'draw', 'trail')
-home_ht_ft_seasonavg <- home_ht_ft_tab / as.vector(n_seasons_byteam)
+colnames(home_ft_ht_tab) <- c('lead', 'draw', 'trail')
+home_ht_ft_seasonavg <- home_ft_ht_tab / as.vector(n_seasons_byteam)
 head(home_ht_ft_seasonavg[, , 1])
 
-away_ht_ft_tab <- xtabs(~ awayteam + halftime_res + fulltime_res,
+away_ft_ht_tab <- xtabs(~ awayteam + halftime_res + fulltime_res,
 	matchstats)
-colnames(away_ht_ft_tab) <- c('trail', 'draw', 'lead')
-away_ht_ft_seasonavg <- away_ht_ft_tab / as.vector(n_seasons_byteam)
+colnames(away_ft_ht_tab) <- c('trail', 'draw', 'lead')
+away_ht_ft_seasonavg <- away_ft_ht_tab / as.vector(n_seasons_byteam)
 head(away_ht_ft_seasonavg[, , 1])
 
 ## season-average number of wins after trailing at half-time
@@ -291,6 +312,22 @@ httrail_win_seasonavg <- rbind(home_ht_ft_seasonavg[, 'trail', 'home_win'],
 	away_ht_ft_seasonavg[, 'trail', 'away_win'])
 rownames(httrail_win_seasonavg) <- c('home_win', 'away_win')
 httrail_win_seasonavg
+
+## percentage of times each team won after trailing at half-time
+
+home_httrail_win_prop <- prop.table(home_ft_ht_tab[, 'trail', ])
+away_httrail_win_prop <- prop.table(away_ft_ht_tab[, 'trail', ])
+httrail_win_prop <- cbind(home_httrail_win_prop[, 'home_win'],
+	away_httrail_win_prop[, 'away_win'])
+colnames(httrail_win_prop) <- c('Home', 'Away')
+head(httrail_win_prop)
+
+## season-average number of losses after leading at half-time
+
+htlead_loss_seasonavg <- rbind(home_ht_ft_seasonavg[, 'lead', 'away_win'], 
+	away_ht_ft_seasonavg[, 'lead', 'home_win'])
+rownames(htlead_loss_seasonavg) <- c('home_loss', 'away_loss')
+htlead_loss_seasonavg
 
 ## season-average number of clean sheets
 
@@ -471,23 +508,19 @@ head(ranktab_byseason[order(ranktab_byseason$points), ])
 
 ## most season-average wins after conceding first
 
-tail(sort(home_sf_res_seasonavg[, 'away', 'home_win']))
-tail(sort(away_sf_res_seasonavg[, 'home', 'away_win']))
+tail(sort(colSums(concf_win_seasonavg)))
 
 ## most season-average losses after scoring first
 
-tail(sort(home_sf_res_seasonavg[, 'home', 'away_win']))
-tail(sort(away_sf_res_seasonavg[, 'away', 'home_win']))
+tail(sort(colSums(sf_loss_seasonavg)))
 
 ## most season-average wins after trailing at half-time
 
-tail(sort(home_ht_ft_seasonavg[, 'trail', 'home_win']))
-tail(sort(away_ht_ft_seasonavg[, 'trail', 'away_win']))
+tail(sort(colSums(httrail_win_seasonavg)))
 
 ## most season-average losses after leading at half-time
 
-tail(sort(home_ht_ft_seasonavg[, 'lead', 'away_win']))
-tail(sort(away_ht_ft_seasonavg[, 'lead', 'home_win']))
+tail(sort(colSums(htlead_loss_seasonavg)))
 
 ## most clean sheets per season
 
@@ -533,71 +566,92 @@ getcol <- function(n, i, alpha = NULL) {
 
 col_hva <- getcol(3, 9)[c(1, 3)]
 
+## function for setting the y-axis limits
+## dat: data to be plotted
+
+set_ylim <- function(dat) {
+	ylim <- c(0, max(dat)) * 1.1
+}
+
 ## function for saving plots as png files
 ## name: a descriptive name for the file (without the .png extension)
 ## w, h: width and height (in pixels) of the image
 
 saveaspng <- function(name, w = 700, h = 480) {
-	filename <- paste0('Plots/', name, '.png')
+	filename <- paste0('epldat5seasons/Plots/', name, '.png')
 	png(filename, w, h)
 }
 
 ##### PLOTS OF CONTIGENCY TABLES #####
 
-saveaspng('fulltime-halftime-results')
-par(mfrow = c(1, 3))
-barplot(prop.table(ft_res_tab), ylim = c(0, .5), main = 'Full-Time Results', 
-	names.arg = ft_res, ylab = 'Proportion', col = getcol(3, 9))
-barplot(prop.table(ht_res_tab), ylim = c(0, .5), main = 'Half-Time Results', 
-	names.arg = ht_res, ylab = 'Proportion', col = getcol(3, 9))
-spineplot(ht_ft_tab, main = 'Full-Time Results by Half-Time Results',
-	xlab = 'Half-time result', ylab = 'Full-time result',
-	xaxlabels = ht_res, yaxlabels = ft_res, col = getcol(3, 9))
+saveaspng('fulltime-halftime-results1')
+par(mfrow = c(1, 2))
+barplot(prop.table(ft_res_tab), main = 'Full-Time Results', 
+	names.arg = ft_res, ylab = 'Proportion', col = getcol(3, 9),
+	ylim = set_ylim(prop.table(ft_res_tab)))
+barplot(prop.table(ht_res_tab), main = 'Half-Time Results', 
+	names.arg = ht_res, ylab = 'Proportion', col = getcol(3, 9),
+	ylim = set_ylim(prop.table(ht_res_tab)))
 par(mfrow = c(1, 1))
 dev.off()
+saveaspng('fulltime-halftime-results2')
+barplot(ft_ht_proptab, main = 'Full-Time Results by Half-Time Results',
+	names.arg = ht_res, xlab = 'Half-time result', ylab = 'Proportion',
+	col = getcol(3, 9), beside = T, legend.text = ft_res, 
+	args.legend = list(x = 'top', title = 'Full-time result', inset = .1))
+dev.off()
 
-saveaspng('fulltime-results-scoredfirst', h = 550)
+saveaspng('fulltime-results-scoredfirst')
 par(mfrow = c(1, 2))
-barplot(scfst_tab, main = 'Which Team Scored First', names.arg = scfst,
+barplot(sf_tab, main = 'Which Team Scored First', names.arg = sf,
 	ylab = 'Number of matches', col = getcol(3, 9))
-spineplot(scfst_ft_tab, main = 'Full-Time Results by Who Scored First',
-	xlab = 'Which team scored first', ylab = 'Full-time result',
-	xaxlabels = scfst, yaxlabels = ft_res, col = getcol(3, 9))
+barplot(ft_sf_proptab[, -2], main = 'Full-Time Results by Who Scored First',
+	names.arg = sf[-2], xlab = 'Which team scored first',
+	ylab = 'Proportion', beside = T, col = getcol(3, 9),
+	legend.text = ft_res, args.legend = list(x = 'top',
+	title = 'Full-time result', inset = .1))
 par(mfrow = c(1, 1))
 dev.off()
 
 saveaspng('fulltime-results-halftime-goaldiff')
-spineplot(htgd_ft_tab, col = getcol(3, 9), ylab = 'Full-time result',
+barplot(ft_htgd_proptab, col = getcol(3, 9), ylim = c(0, 1.3), axes = F,
 	main = 'Full-Time Results by Half-Time Goal Difference',
-	xlab = 'Goal difference at half-time', yaxlabels = ft_res)
+	xlab = 'Goal difference at half-time', ylab = 'Proportion')
+## draw y-axis
+axis(2, seq(0, 1, .2))
+## add legend
+legend('top', ft_res, fill = getcol(3, 9), bty = 'n')
 dev.off()
 
-spineplot(homegoals_ft_tab, col = getcol(3, 9), ylab = 'Full-time result',
-	main = 'Full-Time Results by Home Goals', yaxlabels = ft_res,
-	xlab = 'Number of goals scored by the home team')
-
-spineplot(awaygoals_ft_tab, col = getcol(3, 9), ylab = 'Full-time result', 
-	main = 'Full-Time Results by Away Goals', yaxlabels = ft_res,
-	xlab = 'Number of goals scored by the away team')
-
-saveaspng('formations', w = 1000)
+saveaspng('formations', 1000)
 par(mfrow = c(1, 4))
 for (i in 1:4) {
-	spineplot(ft_form_tab[, , i], col = getcol(3, 9), yaxlabels = ft_res,
-		xlab = 'Home team formation', ylab = 'Full-time result')
-	mtext(paste('Away team formation:', names(awayfm_tab)[i]), cex = .8)
+	bp <- barplot(ft_form_proptab[, , i], col = getcol(3, 9), axes = F, 
+		axisnames = F, ylim = c(0, 1.3), ylab = 'Proportion', 
+		cex.lab = 1.5)
+	## draw y-axis
+	axis(2, seq(0, 1, .2), cex.axis = 1.25)
+	## add info on teams' formations
+	mtext(paste('Away formation:', dimnames(ft_form_proptab)[[3]][i]),
+		line = -9)
+	mtext(dimnames(ft_form_proptab)[[2]], at = bp, side = 1, line = 1)
 }
 par(mfrow = c(1, 1))
-## add title
-text <- 'Full-Time Results by Combinations of Home Team Formation and Away Team Formation'
-mtext(text, line = 2.5, font = 2, cex = 1.2)
+## add title and x-axis label
+title <- 'Full-Time Results by Combinations of Home Team Formation and Away Team Formation'
+xlab <- 'Home formation'
+mtext(c(title, xlab), side = c(3, 1), line = c(2, 3.5), font = c(2, 1), 
+	cex = c(1.25, 1))
+## add legend
+legend('topleft', ft_res, fill = getcol(3, 9), bty = 'n', 
+	inset = c(.41, .02))
 dev.off()
 
 ##### PLOTS OF NUMERIC VARIABLES #####
 
 xnames <- c('Home team', 'Away team')
 
-saveaspng('numericvars', w = 600)
+saveaspng('numericvars', 600)
 par(mfrow = c(3, 3))
 with(matchstats, boxplot(homegoals, awaygoals, col = col_hva,
 	main = 'Home Goals and Away Goals', names = xnames,
@@ -638,7 +692,7 @@ dev.off()
 
 library(corrplot)   ## for function corrplot()
 
-saveaspng('correlation-matrix', w = 480)
+saveaspng('correlation-matrix', 480)
 corrplot(cor(matchstats[, c(5:6, 9, 12:27)]), method = 'color', 
 	title = 'Correlation Matrix', type = 'upper', diag = F, 
 	mar = c(0, 0, 4, 0), tl.col = 1, cl.pos = 'b', cl.ratio = .1)
@@ -657,52 +711,62 @@ dev.off()
 
 ##### PLOTS OF PER-SEASON AND PER-MATCH AVERAGES #####
 
-saveaspng('team-seasonavg-win-draw-loss', w = 1680)
-spineplot(res_seasonavg[, c('win', 'draw', 'loss')],
+saveaspng('win-draw-loss', 1280)
+barplot(res_proptab, col = getcol(3, 9), ylim = c(0, 1.3), axes = F,
 	main = paste('Season-Average Numbers of Wins, Draws, and Losses,',
-	'Grouped by Team'), xlab = 'Team', ylab = 'Full-time result',
-	xaxlabels = teams_abbr, yaxlabels = c('Win', 'Draw', 'Loss'),
-	col = getcol(3, 9))
+	'Grouped by Team'), names.arg = teams_abbr, xlab = 'Team',
+	ylab = 'Proportion')
+## draw y-axis
+axis(2, seq(0, 1, .2))
+## add legend
+legend('top', ft_res, fill = getcol(3, 9), bty = 'n')
 dev.off()
 
-saveaspng('team-seasonavg-win-concfirst', w = 1280)
+saveaspng('win-concfirst-seasonavg', 1280)
 barplot(concf_win_seasonavg, col = getcol(2, 9), names.arg = teams_abbr,
 	main = paste('Season-Average Number of Times A Team Won',
 	'After Conceding First'), ylim = c(0, max(concf_win_seasonavg) * 1.1), 
-	ylab = 'Number of matches', xlab = 'Team',
-	legend.text = c('Home win', 'Away win'), args.legend = list(
-	x = 'topleft', inset = c(.15, .05), horiz = T))
+	ylab = 'Number of matches', xlab = 'Team')
+## add legend
+legend('topleft', c('Home win', 'Away win'), fill = getcol(2, 9), 
+	inset = c(.15, .05), horiz = T)
 dev.off()
 
-saveaspng('team-seasonavg-win-trailatht', w = 1280)
+saveaspng('win-concfirst-prop', 480)
+boxplot(concf_win_prop, col = col_hva, ylab = 'Proportion',
+	main = 'Proportion of Times A Team Won After Conceding First', 
+	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5)
+dev.off()
+
+saveaspng('win-trailatht-seasonavg', 1280)
 barplot(httrail_win_seasonavg, col = getcol(2, 9), names.arg = teams_abbr,
 	main = paste('Season-Average Number of Times A Team Won',
 	'After Trailing at Half-Time'), ylab = 'Number of matches',
-	xlab = 'Team', legend.text = c('Home win', 'Away win'), 
-	args.legend = list(x = 'top', inset = .1, horiz = T))
+	xlab = 'Team')
+## add legend
+legend('top', c('Home win', 'Away win'), fill = getcol(2, 9), inset = .1, 
+	horiz = T)
+dev.off()
+
+saveaspng('win-trailatht-prop', 480)
+boxplot(httrail_win_prop, col = col_hva, ylab = 'Proportion',
+	main = 'Proportion of Times A Team Won After Trailing at Half-Time', 
+	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5)
 dev.off()
 
 ## PLOTS OF NUMERIC VARIABLES
 
-saveaspng('team-matchavg-goals-homevsaway', w = 600)
+saveaspng('team-matchavg-goals-homevsaway', 600)
 par(mfrow = c(1, 2))
 with(matchavg, boxplot(homescored, awayscored, col = col_hva,
-	main = 'Average Number of Goals Scored\nat Home and Away Per Match', 
+	main = 'Average Number of Goals Scored\nPer Match at Home Vs. Away', 
 	cex.axis = .8, names = c('Home', 'Away'), ylab = 'Number of goals', 
 	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5))
-## add mean points
-points(colMeans(matchavg[, -1])[c('homescored', 'awayscored')], pch = 23,
-	bg = 'red')
 with(matchavg, boxplot(homeconceded, awayconceded, col = col_hva,
-	main = 'Average Number of Goals Conceded\nat Home and Away Per Match', 
+	main = 'Average Number of Goals Conceded\nPer Match at Home Vs. Away', 
 	cex.axis = .8, names = c('Home', 'Away'), ylab = 'Number of goals', 
 	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5))
-## add mean points
-points(colMeans(matchavg[, -1])[c('homeconceded', 'awayconceded')], 
-	pch = 23, bg = 'red')
 par(mfrow = c(1, 1))
-## add explanation
-mtext('The red diamond shapes denote the mean points', side = 1, line = 3.5)
 dev.off()
 
 par(mfrow = c(2, 4))
@@ -892,36 +956,46 @@ ylim <- range(sapply(pdp, function(x) range(x$y))) * c(1.1, 1.5)
 ## draw the plots
 
 saveaspng('randomforest-partialdependence-numeric')
-plot(pdp[[1]], type = 'b', col = 3, lty = 2, xlim = xlim, ylim = ylim,
-	main = paste('Partial Dependence of Full-Time Results on the Numbers',
-		'of Home Goals and Away Goals'),
-	xlab = 'Number of goals', ylab = 'Partial dependence')
-lines(pdp[[2]], type = 'b', col = 3, lty = 3)
-lines(pdp[[3]], type = 'b', col = 3, lty = 4)
-lines(pdp[[4]], type = 'b', col = 4, lty = 2, pch = 0)
-lines(pdp[[5]], type = 'b', col = 4, lty = 4, pch = 0)
+plot(pdp[[1]], type = 'b', col = 3, lty = 2, lwd = 2, xlim = xlim, 
+	ylim = ylim, main = paste('Partial Dependence of Full-Time Results on', 
+	'the Numbers of Home Goals and Away Goals'), xlab = 'Number of goals', 
+	ylab = 'Partial dependence')
+lines(pdp[[2]], type = 'b', col = 3, lty = 3, lwd = 3, pch = 0)
+lines(pdp[[3]], type = 'b', col = 3, lty = 4, lwd = 2, pch = 2)
+lines(pdp[[4]], type = 'b', col = 4, lty = 2, lwd = 2, pch = 16)
+lines(pdp[[5]], type = 'b', col = 4, lty = 4, lwd = 2, pch = 17)
 ## add legends
 legend('topleft', c('Home win', 'Draw', 'Away win'), col = 3, lty = 2:4,
-	pch = 1, title = 'Dependence on home goals', box.lwd = .5)
+	lwd = c(2, 3, 2), pch = c(1, 0, 2), title = 'Dependence on home goals', 
+	box.lwd = .5)
 legend('topright', c('Home win', 'Away win'), col = 4, lty = c(2, 4),
-	pch = 0, title = 'Dependence on away goals', box.lwd = .5)
+	lwd = 2, pch = c(16, 17), title = 'Dependence on away goals', 
+	box.lwd = .5)
 ## add horizontal line at y = 0
-abline(h = 0, col = 'red', lty = 5, lwd = .5)
+abline(h = 0, col = 'red', lty = 5)
 dev.off()
 
-saveaspng('randomforest-partialdependence-scfst')
+saveaspng('randomforest-partialdependence-sf', 750)
 classes <- levels(trainset$fulltime_res)
 par(mfrow = c(1, 3))
 for (i in seq_along(classes)) {
 	pdp_sf <- partialPlot(rf, as.data.frame(trainset), scoredfirst,
 		classes[i], plot = F)
-	barplot(pdp_sf$y, col = getcol(3, 9)[i], names.arg = pdp_sf$x,
-		ylab = 'Partial dependence', legend.text = ft_res[i],
-		args.legend = list(x = i %% 3 + 2))
+	bp <- barplot(pdp_sf$y, col = getcol(3, 9)[i], axes = F, axisnames = F,
+		ylim = range(pdp_sf$y) + c(-.2, 1), ylab = 'Partial dependence',
+		cex.lab = 1.5)
+	## draw y-axis
+	axis(2, cex.axis = 1.2)
+	## add x-axis names
+	mtext(sf, at = bp, side = 1, line = .5, cex = .9)
+	## add legend
+	legend('top', ft_res[i], fill = getcol(3, 9)[i], cex = 1.4, 
+		inset = .02, box.lwd = .5)
 }
 par(mfrow = c(1, 1))
-## add title and label
-mtext('Partial Dependence of Full-Time Results on Which Team Scored First',
-	line = 2.5, font = 2, adj = .5, cex = 1.2)
-mtext('Which team scored first', side = 1, line = 3.5, cex = .8)
+## add title and x-axis label
+title <- 'Partial Dependence of Full-Time Results on Which Team Scored First'
+xlab <- 'Which team scored first'
+mtext(c(title, xlab), side = c(3, 1), line = c(2.5, 3.5), font = c(2, 1), 
+	cex = c(1.2, 1))
 dev.off()
