@@ -566,11 +566,13 @@ getcol <- function(n, i, alpha = NULL) {
 
 col_hva <- getcol(3, 9)[c(1, 3)]
 
-## function for setting the y-axis limits
-## dat: data to be plotted
+## function for drawing box plots with user-defined properties
+## x: data for plotting
+## ...: other arguments to be passed to the boxplot() function
 
-set_ylim <- function(dat) {
-	ylim <- c(0, max(dat)) * 1.1
+myboxplot <- function(x, ...) {
+	boxplot(x, ..., col = col_hva, boxwex = .6, medlwd = 2, whisklwd = .5, 
+		staplewex = .3, outcex = .5)
 }
 
 ## function for saving plots as png files
@@ -584,17 +586,7 @@ saveaspng <- function(name, w = 700, h = 480) {
 
 ##### PLOTS OF CONTIGENCY TABLES #####
 
-saveaspng('fulltime-halftime-results1')
-par(mfrow = c(1, 2))
-barplot(prop.table(ft_res_tab), main = 'Full-Time Results', 
-	names.arg = ft_res, ylab = 'Proportion', col = getcol(3, 9),
-	ylim = set_ylim(prop.table(ft_res_tab)))
-barplot(prop.table(ht_res_tab), main = 'Half-Time Results', 
-	names.arg = ht_res, ylab = 'Proportion', col = getcol(3, 9),
-	ylim = set_ylim(prop.table(ht_res_tab)))
-par(mfrow = c(1, 1))
-dev.off()
-saveaspng('fulltime-halftime-results2')
+saveaspng('fulltime-halftime-results')
 barplot(ft_ht_proptab, main = 'Full-Time Results by Half-Time Results',
 	names.arg = ht_res, xlab = 'Half-time result', ylab = 'Proportion',
 	col = getcol(3, 9), beside = T, legend.text = ft_res, 
@@ -649,42 +641,36 @@ dev.off()
 
 ##### PLOTS OF NUMERIC VARIABLES #####
 
-xnames <- c('Home team', 'Away team')
+## function for drawing box plots of numeric variables
+## x, y: data for plotting
+## ...: other arguments to be passed to myboxplot() function
 
-saveaspng('numericvars', 600)
+numvarsbxp <- function(x, y, ...) {
+	myboxplot(x, y, names = c('Home team', 'Away team'), cex.main = 1.5, 
+		cex.lab = 1.2, cex.axis = 1.2, ...)
+}
+
+saveaspng('numericvars', 700, 500)
 par(mfrow = c(3, 3))
-with(matchstats, boxplot(homegoals, awaygoals, col = col_hva,
-	main = 'Home Goals and Away Goals', names = xnames,
-	ylab = 'Number of goals', boxwex = .6, medlwd = 2, whisklwd = .5, 
-	staplewex = .3, outcex = .5))
-with(matchstats, boxplot(homepossession, awaypossession, col = col_hva,
-	main = 'Home Possession and\nAway Possession', names = xnames,
-	ylab = 'Proportion of possession', boxwex = .6, medlwd = 2, 
-	whisklwd = .5, staplewex = .3, outcex = .5))
-with(matchstats, boxplot(homepasses, awaypasses, col = col_hva,
-	main = 'Home Passes and Away Passes', names = xnames,
-	ylab = 'Number of passes', boxwex = .6, medlwd = 2, whisklwd = .5, 
-	staplewex = .3, outcex = .5))
-with(matchstats, boxplot(homepass_acc, awaypass_acc, col = col_hva,
-	main = 'Passing Accuracy', names = xnames, boxwex = .6, medlwd = 2, 
-	whisklwd = .5, staplewex = .3, outcex = .5))
-with(matchstats, boxplot(homeshots, awayshots, col = col_hva,
-	main = 'Home Shots and Away Shots', names = xnames,
-	ylab = 'Number of shots', boxwex = .6, medlwd = 2, whisklwd = .5, 
-	staplewex = .3, outcex = .5))
-with(matchstats, boxplot(homeontarget, awayontarget, col = col_hva,
-	main = 'Proportion of Shots on Target', names = xnames, boxwex = .6, 
-	medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5))
-with(matchstats, boxplot(homesaves, awaysaves, col = col_hva,
-	main = 'Proportion of Shots on Target\nSaved by the Goalkeeper',
-	names = xnames, boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, 
-	outcex = .5))
-with(matchstats, boxplot(homedefense, awaydefense, col = col_hva,
-	main = 'Number of defensive Plays', names = xnames, boxwex = .6, 
-	medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5))
-with(matchstats, boxplot(homebadplays, awaybadplays, col = col_hva,
-	main = 'Number of Unsportsmanlike Plays', names = xnames, boxwex = .6, 
-	medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5))
+with(matchstats, numvarsbxp(homegoals, awaygoals, ylab = 'Number of goals',
+	main = 'Home Goals and Away Goals'))
+with(matchstats, numvarsbxp(homepossession, awaypossession,
+	main = 'Home Possession and\nAway Possession',
+	ylab = 'Proportion of possession'))
+with(matchstats, numvarsbxp(homepasses, awaypasses,
+	main = 'Home Passes and Away Passes', ylab = 'Number of passes'))
+with(matchstats, myboxplot(homepass_acc, awaypass_acc,
+	main = 'Passing Accuracy'))
+with(matchstats, numvarsbxp(homeshots, awayshots, ylab = 'Number of shots',
+	main = 'Home Shots and Away Shots'))
+with(matchstats, numvarsbxp(homeontarget, awayontarget,
+	main = 'Proportion of Shots on Target'))
+with(matchstats, numvarsbxp(homesaves, awaysaves,
+	main = 'Proportion of Shots on Target\nSaved by the Goalkeeper'))
+with(matchstats, numvarsbxp(homedefense, awaydefense,
+	main = 'Number of Defensive Plays'))
+with(matchstats, numvarsbxp(homebadplays, awaybadplays,
+	main = 'Number of Unsportsmanlike Plays'))
 par(mfrow = c(1, 1))
 dev.off()
 
@@ -715,25 +701,26 @@ saveaspng('win-draw-loss', 1280)
 barplot(res_proptab, col = getcol(3, 9), ylim = c(0, 1.3), axes = F,
 	main = paste('Season-Average Numbers of Wins, Draws, and Losses,',
 	'Grouped by Team'), names.arg = teams_abbr, xlab = 'Team',
-	ylab = 'Proportion')
+	ylab = 'Proportion', cex.lab = 1.3, cex.main = 1.5)
 ## draw y-axis
 axis(2, seq(0, 1, .2))
 ## add legend
-legend('top', ft_res, fill = getcol(3, 9), bty = 'n')
+legend('top', ft_res, fill = getcol(3, 9), cex = 1.2, bty = 'n')
 dev.off()
 
 saveaspng('win-concfirst-seasonavg', 1280)
 barplot(concf_win_seasonavg, col = getcol(2, 9), names.arg = teams_abbr,
 	main = paste('Season-Average Number of Times A Team Won',
 	'After Conceding First'), ylim = c(0, max(concf_win_seasonavg) * 1.1), 
-	ylab = 'Number of matches', xlab = 'Team')
+	ylab = 'Number of matches', xlab = 'Team', cex.lab = 1.3, 
+	cex.main = 1.5)
 ## add legend
-legend('topleft', c('Home win', 'Away win'), fill = getcol(2, 9), 
+legend('topleft', c('Home win', 'Away win'), cex = 1.2, fill = getcol(2, 9), 
 	inset = c(.15, .05), horiz = T)
 dev.off()
 
 saveaspng('win-concfirst-prop', 480)
-boxplot(concf_win_prop, col = col_hva, ylab = 'Proportion',
+myboxplot(concf_win_prop, col = col_hva, ylab = 'Proportion',
 	main = 'Proportion of Times A Team Won After Conceding First', 
 	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5)
 dev.off()
@@ -742,103 +729,72 @@ saveaspng('win-trailatht-seasonavg', 1280)
 barplot(httrail_win_seasonavg, col = getcol(2, 9), names.arg = teams_abbr,
 	main = paste('Season-Average Number of Times A Team Won',
 	'After Trailing at Half-Time'), ylab = 'Number of matches',
-	xlab = 'Team')
+	xlab = 'Team', cex.lab = 1.3, cex.main = 1.5)
 ## add legend
-legend('top', c('Home win', 'Away win'), fill = getcol(2, 9), inset = .1, 
-	horiz = T)
+legend('top', c('Home win', 'Away win'), cex = 1.2, fill = getcol(2, 9), 
+	inset = .1, horiz = T)
 dev.off()
 
 saveaspng('win-trailatht-prop', 480)
-boxplot(httrail_win_prop, col = col_hva, ylab = 'Proportion',
+myboxplot(httrail_win_prop, col = col_hva, ylab = 'Proportion',
 	main = 'Proportion of Times A Team Won After Trailing at Half-Time', 
 	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5)
 dev.off()
 
 ## PLOTS OF NUMERIC VARIABLES
 
-saveaspng('team-matchavg-goals-homevsaway', 600)
+saveaspng('goals-homevsaway-matchavg', 600)
 par(mfrow = c(1, 2))
-with(matchavg, boxplot(homescored, awayscored, col = col_hva,
+with(matchavg, myboxplot(homescored, awayscored, col = col_hva,
 	main = 'Average Number of Goals Scored\nPer Match at Home Vs. Away', 
-	cex.axis = .8, names = c('Home', 'Away'), ylab = 'Number of goals', 
-	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5))
-with(matchavg, boxplot(homeconceded, awayconceded, col = col_hva,
+	cex.axis = .8, names = c('Home', 'Away'), ylab = 'Number of goals'))
+with(matchavg, myboxplot(homeconceded, awayconceded, col = col_hva,
 	main = 'Average Number of Goals Conceded\nPer Match at Home Vs. Away', 
-	cex.axis = .8, names = c('Home', 'Away'), ylab = 'Number of goals', 
-	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5))
+	cex.axis = .8, names = c('Home', 'Away'), ylab = 'Number of goals'))
 par(mfrow = c(1, 1))
 dev.off()
 
-par(mfrow = c(2, 4))
-boxplot(matchavg$possession, main = 'Proportion of Ball Possession',
-	col = 3, boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, 
-	outcex = .5)
-boxplot(matchavg$passes, main = 'Number of Passes', col = 3, 
-	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5)
-boxplot(matchavg$pass_acc, main = 'Passing Accuracy', col = 3, 
-	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5)
-boxplot(matchavg$shots, main = 'Number of Shots', col = 3, 
-	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5)
-boxplot(matchavg$ontarget, main = 'Proportion of Shots on Target', 
-	col = 3, boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, 
-	outcex = .5)
-boxplot(matchavg$ontarget, col = 3,
-	main = 'Proportion of Shots on Target\nSaved by the Goalkeeper', 
-	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5)
-boxplot(matchavg$saves, main = 'Number of Defensive Plays', col = 3, 
-	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5)
-boxplot(matchavg$badplays, main = 'Number of Unsportsmanlike Plays', 
-	col = 3, boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, 
-	outcex = .5)
-par(mfrow = c(1, 1))
+## function for drawing bar plots of numeric variables
+## var: name of column in matchavg data frame to be plotted
+## ...: other arguments to be passed to barplot() function
+
+numvarsbrp <- function(var, ...) {
+	barplot(matchavg[, var], col = getcol(n_teams_unique, 9), xlab = 'Team', 
+		cex.lab = 1.3, cex.main = 1.5, names.arg = teams_abbr, 
+		ylim = c(0, matchavg[, var]) * 1.1, ...)
+}
 
 saveaspng('team-matchavg-possession', 1280)
-barplot(matchavg$possession, col = getcol(n_teams_unique, 1),
-	main = 'Average Proportion of Ball Possession Per Match', ylab = 'Team',
-	names.arg = teams_abbr, ylim = c(0, max(matchavg$possession) * 1.1))
+numvarsbrp('possession', main = 'Average Proportion of Ball Possession Per Match')
 dev.off()
 
 saveaspng('team-matchavg-passes', 1280)
-barplot(matchavg$passes, col = getcol(n_teams_unique, 1),
-	main = 'Average Number of Passes Per Match', ylab = 'Team',
-	names.arg = teams_abbr, ylim = c(0, max(matchavg$passes) * 1.1))
+numvarsbrp('passes', main = 'Average Number of Passes Per Match')
 dev.off()
 
 saveaspng('team-matchavg-pass_acc', 1280)
-barplot(matchavg$pass_acc, col = getcol(n_teams_unique, 1),
-	main = 'Average Passing Accuracy Per Match', ylab = 'Team',
-	names.arg = teams_abbr, ylim = c(0, max(matchavg$pass_acc) * 1.1))
+numvarsbrp('pass_acc', main = 'Average Passing Accuracy Per Match')
 dev.off()
 
 saveaspng('team-matchavg-shots', 1280)
-barplot(matchavg$shots, col = getcol(n_teams_unique, 1),
-	main = 'Average Number of Shots Per Match', ylab = 'Team',
-	names.arg = teams_abbr, ylim = c(0, max(matchavg$shots) * 1.1))
+numvarsbrp('shots', main = 'Average Number of Shots Per Match')
 dev.off()
 
 saveaspng('team-matchavg-ontarget', 1280)
-barplot(matchavg$ontarget, col = getcol(n_teams_unique, 1),
-	main = 'Average Proportion of Shots on Target Per Match', ylab = 'Team', 
-	names.arg = teams_abbr, ylim = c(0, max(matchavg$ontarget) * 1.1))
+numvarsbrp('ontarget', main = 'Average Proportion of Shots on Target Per Match')
 dev.off()
 
 saveaspng('team-matchavg-saves', 1280)
-barplot(matchavg$saves, col = getcol(n_teams_unique, 1),
-	main = paste('Average Proportion of Shots on Target Saved by',
-	'the Goalkeeper Per Match'), ylab = 'Team', names.arg = teams_abbr, 
-	ylim = c(0, max(matchavg$saves) * 1.1))
+numvarsbrp('saves', main = paste('Average Proportion of Shots on Target', 
+	'Saved by the Goalkeeper Per Match'))
 dev.off()
 
 saveaspng('team-matchavg-defense', 1280)
-barplot(matchavg$defense, col = getcol(n_teams_unique, 1),
-	main = 'Average Number of Defensive Plays Per Match', ylab = 'Team', 
-	names.arg = teams_abbr, ylim = c(0, max(matchavg$defense) * 1.1))
+numvarsbrp('defense', main = 'Average Number of Defensive Plays Per Match')
 dev.off()
 
 saveaspng('team-matchavg-badplays', 1280)
-barplot(matchavg$badplays, col = getcol(n_teams_unique, 1), ylab = 'Team',
-	main = 'Average Number of Unsportsmanlike Plays Per Match',
-	names.arg = teams_abbr, ylim = c(0, max(matchavg$badplays) * 1.1))
+numvarsbrp('badplays', main = 'Average Number of Unsportsmanlike Plays Per Match')
 dev.off()
 
 ########## STATISTICAL ANALYSES ##########
