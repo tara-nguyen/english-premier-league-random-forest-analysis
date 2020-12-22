@@ -619,24 +619,23 @@ saveaspng('formations', 1000)
 par(mfrow = c(1, 4))
 for (i in 1:4) {
 	bp <- barplot(ft_form_proptab[, , i], col = getcol(3, 9), axes = F, 
-		axisnames = F, ylim = c(0, 1.3), ylab = 'Proportion', 
+		axisnames = F, ylim = c(0, 1.35), ylab = 'Proportion', 
 		cex.lab = 1.5)
 	## draw y-axis
-	axis(2, seq(0, 1, .2), cex.axis = 1.25)
+	axis(2, seq(0, 1, .2), cex.axis = 1.3)
 	## add info on teams' formations
 	mtext(paste('Away formation:', dimnames(ft_form_proptab)[[3]][i]),
-		line = -9)
+		line = -10.25, cex = 1.15)
+	mtext('Home formation', side = 1, line = 3, cex = 1.15)
 	mtext(dimnames(ft_form_proptab)[[2]], at = bp, side = 1, line = 1)
 }
 par(mfrow = c(1, 1))
-## add title and x-axis label
-title <- 'Full-Time Results by Combinations of Home Team Formation and Away Team Formation'
-xlab <- 'Home formation'
-mtext(c(title, xlab), side = c(3, 1), line = c(2, 3.5), font = c(2, 1), 
-	cex = c(1.25, 1))
+## add title
+mtext(paste('Full-Time Results by Combinations of Home Team Formation and', 
+	'Away Team Formation'), side = 3, line = 2.25, font = 2, cex = 1.3)
 ## add legend
-legend('topleft', ft_res, fill = getcol(3, 9), bty = 'n', 
-	inset = c(.41, .02))
+legend('topleft', ft_res, cex = 1.2, fill = getcol(3, 9), bty = 'n', 
+	inset = c(.4, .018), y.intersp = .9)
 dev.off()
 
 ##### PLOTS OF NUMERIC VARIABLES #####
