@@ -720,11 +720,6 @@ legend('topleft', c('Home win', 'Away win'), cex = 1.2, fill = getcol(2, 9),
 	inset = c(.15, .05), horiz = T)
 dev.off()
 
-saveaspng('win-concfirst-prop', 480)
-myboxplot(concf_win_prop, ylab = 'Proportion', main = paste('Proportion of',
-	'Times A Team Won At Home Vs. Away\nAfter Conceding First'))
-dev.off()
-
 saveaspng('win-trailatht-seasonavg', 1280)
 barplot(httrail_win_seasonavg, col = getcol(2, 9), names.arg = teams_abbr,
 	main = paste('Season-Average Number of Times A Team Won',
@@ -735,9 +730,13 @@ legend('top', c('Home win', 'Away win'), cex = 1.2, fill = getcol(2, 9),
 	inset = .1, horiz = T)
 dev.off()
 
-saveaspng('win-trailatht-prop', 480)
+saveaspng('win-homeadvantage-props')
+par(mfrow = c(1, 2))
+myboxplot(concf_win_prop, ylab = 'Proportion', main = paste('Proportion of',
+	'Times A Team Won\nAt Home Vs. Away After Conceding First'))
 myboxplot(httrail_win_prop, ylab = 'Proportion', main = paste('Proportion',
-	'of Times A Team Won At Home Vs. Away\nAfter Trailing at Half-Time'))
+	'of Times A Team Won\nAt Home Vs. Away After Trailing at Half-Time'))
+par(mfrow = c(1, 1))
 dev.off()
 
 ## PLOTS OF NUMERIC VARIABLES
