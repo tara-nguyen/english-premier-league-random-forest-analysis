@@ -596,12 +596,13 @@ dev.off()
 saveaspng('fulltime-results-scoredfirst')
 par(mfrow = c(1, 2))
 barplot(sf_tab, main = 'Which Team Scored First', names.arg = sf,
-	ylab = 'Number of matches', col = getcol(3, 9))
-barplot(ft_sf_proptab[, -2], main = 'Full-Time Results by Who Scored First',
-	names.arg = sf[-2], xlab = 'Which team scored first',
-	ylab = 'Proportion', beside = T, col = getcol(3, 9),
-	legend.text = ft_res, args.legend = list(x = 'top',
-	title = 'Full-time result', inset = .1))
+	ylab = 'Number of matches', ylim = c(0, max(sf_tab)) * 1.1, 
+	col = getcol(3, 9))
+barplot(ft_sf_proptab[, -2], ylim = c(0, max(ft_sf_proptab[, -2])) * 1.1, 
+	main = 'Full-Time Results by Who Scored First',names.arg = sf[-2],
+	xlab = 'Which team scored first', ylab = 'Proportion', beside = T, 
+	col = getcol(3, 9), legend.text = ft_res, args.legend = list(x = 'top',
+	title = 'Full-time result', inset = .05, box.lwd = .5))
 par(mfrow = c(1, 1))
 dev.off()
 
@@ -641,35 +642,36 @@ dev.off()
 ##### PLOTS OF NUMERIC VARIABLES #####
 
 ## function for drawing box plots of numeric variables
-## x, y: data for plotting
+## vars: names of column in matchavg data frame to be plotted
 ## ...: other arguments to be passed to myboxplot() function
 
-numvarsbxp <- function(x, y, ...) {
-	myboxplot(x, y, names = c('Home team', 'Away team'), cex.main = 1.5, 
-		cex.lab = 1.2, cex.axis = 1.2, ...)
+numvarsbxp1 <- function(vars, ...) {
+	myboxplot(matchstats[, vars], show.names = F, cex.main = 1.5, 
+		cex.lab = 1.35, cex.axis = 1.1, ...)
+	## add x-axis labels
+	mtext(c('Home team', 'Away team'), side = 1, line = 1, at  = 1:2)
 }
 
-saveaspng('numericvars', 700, 500)
+saveaspng('numericvars1', 700, 500)
 par(mfrow = c(3, 3))
-with(matchstats, numvarsbxp(homegoals, awaygoals, ylab = 'Number of goals',
-	main = 'Home Goals and Away Goals'))
-with(matchstats, numvarsbxp(homepossession, awaypossession,
+numvarsbxp1(c('homegoals', 'awaygoals'), ylab = 'Number of goals',
+	main = 'Home Goals and Away Goals')
+numvarsbxp1(c('homepossession', 'awaypossession'),
 	main = 'Home Possession and\nAway Possession',
-	ylab = 'Proportion of possession'))
-with(matchstats, numvarsbxp(homepasses, awaypasses,
-	main = 'Home Passes and Away Passes', ylab = 'Number of passes'))
-with(matchstats, myboxplot(homepass_acc, awaypass_acc,
-	main = 'Passing Accuracy'))
-with(matchstats, numvarsbxp(homeshots, awayshots, ylab = 'Number of shots',
-	main = 'Home Shots and Away Shots'))
-with(matchstats, numvarsbxp(homeontarget, awayontarget,
-	main = 'Proportion of Shots on Target'))
-with(matchstats, numvarsbxp(homesaves, awaysaves,
-	main = 'Proportion of Shots on Target\nSaved by the Goalkeeper'))
-with(matchstats, numvarsbxp(homedefense, awaydefense,
-	main = 'Number of Defensive Plays'))
-with(matchstats, numvarsbxp(homebadplays, awaybadplays,
-	main = 'Number of Unsportsmanlike Plays'))
+	ylab = 'Proportion of possession')
+numvarsbxp1(c('homepasses', 'awaypasses'), ylab = 'Number of passes',
+	main = 'Home Passes and Away Passes')
+numvarsbxp1(c('homepass_acc', 'awaypass_acc'), main = 'Passing Accuracy')
+numvarsbxp1(c('homeshots', 'awayshots'), ylab = 'Number of shots',
+	main = 'Home Shots and Away Shots')
+numvarsbxp1(c('homeontarget', 'awayontarget'),
+	main = 'Proportion of Shots on Target')
+numvarsbxp1(c('homesaves', 'awaysaves'),
+	main = 'Proportion of Shots on Target\nSaved by the Goalkeeper')
+numvarsbxp1(c('homedefense', 'awaydefense'),
+	main = 'Number of Defensive Plays')
+numvarsbxp1(c('homebadplays', 'awaybadplays'),
+	main = 'Number of Unsportsmanlike Plays')
 par(mfrow = c(1, 1))
 dev.off()
 
@@ -719,9 +721,8 @@ legend('topleft', c('Home win', 'Away win'), cex = 1.2, fill = getcol(2, 9),
 dev.off()
 
 saveaspng('win-concfirst-prop', 480)
-myboxplot(concf_win_prop, col = col_hva, ylab = 'Proportion',
-	main = 'Proportion of Times A Team Won After Conceding First', 
-	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5)
+myboxplot(concf_win_prop, ylab = 'Proportion', main = paste('Proportion of',
+	'Times A Team Won At Home Vs. Away\nAfter Conceding First'))
 dev.off()
 
 saveaspng('win-trailatht-seasonavg', 1280)
@@ -735,21 +736,44 @@ legend('top', c('Home win', 'Away win'), cex = 1.2, fill = getcol(2, 9),
 dev.off()
 
 saveaspng('win-trailatht-prop', 480)
-myboxplot(httrail_win_prop, col = col_hva, ylab = 'Proportion',
-	main = 'Proportion of Times A Team Won After Trailing at Half-Time', 
-	boxwex = .6, medlwd = 2, whisklwd = .5, staplewex = .3, outcex = .5)
+myboxplot(httrail_win_prop, ylab = 'Proportion', main = paste('Proportion',
+	'of Times A Team Won At Home Vs. Away\nAfter Trailing at Half-Time'))
 dev.off()
 
 ## PLOTS OF NUMERIC VARIABLES
 
-saveaspng('goals-homevsaway-matchavg', 600)
-par(mfrow = c(1, 2))
-with(matchavg, myboxplot(homescored, awayscored, col = col_hva,
-	main = 'Average Number of Goals Scored\nPer Match at Home Vs. Away', 
-	cex.axis = .8, names = c('Home', 'Away'), ylab = 'Number of goals'))
-with(matchavg, myboxplot(homeconceded, awayconceded, col = col_hva,
-	main = 'Average Number of Goals Conceded\nPer Match at Home Vs. Away', 
-	cex.axis = .8, names = c('Home', 'Away'), ylab = 'Number of goals'))
+## function for drawing box plots of numeric variables
+## var: name of column in matchavg data frame to be plotted
+## main: plot title
+## ...: other arguments to be passed to myboxplot() function
+
+numvarsbxp2 <- function(var, ..., main) {
+	myboxplot(home_matchavg[, var], away_matchavg[, var], show.names = F,
+		cex.main = 1.5, cex.lab = 1.35, cex.axis = 1.1,
+		main = paste0('Average ', main, 'Per Match'), ...)
+	## add x-axis labels
+	mtext(c('Home match', 'Away match'), side = 1, line = 1, at = 1:2)
+}
+
+saveaspng('numericvars2', 800, 700)
+par(mfrow = c(4, 3))
+numvarsbxp2('goalsscored', main = 'Number of Goals Scored\n',
+	ylab = 'Number of goals')
+numvarsbxp2('goalsconceded', main = 'Number of Goals Conceded\n',
+	ylab = 'Number of goals')
+numvarsbxp2('possession', main = 'Proportion of Possession\n',
+	ylab = 'Proportion')
+numvarsbxp2('passes', main = 'Number of Passes\n', ylab = 'Number of passes')
+numvarsbxp2('pass_acc', main = 'Passing Accuracy\n', ylab = 'Accuracy')
+numvarsbxp2('shots', main = 'Number of Shots\n', ylab = 'Number of shots')
+numvarsbxp2('ontarget', main = 'Proportion of Shots on Target\n',
+	ylab = 'Number of shots')
+numvarsbxp2('saves', main = paste('Proportion of Shots on Target\nSaved by', 
+	'the Goalkeeper '), ylab = 'Proportion')
+numvarsbxp2('defense', main = 'Number of Defensive Plays\n',
+	ylab = 'Number of plays')
+numvarsbxp2('badplays', main = 'Number of Unsportsmanlike Plays\n',
+	ylab = 'Number of plays')
 par(mfrow = c(1, 1))
 dev.off()
 
