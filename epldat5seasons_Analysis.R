@@ -207,7 +207,9 @@ ft_form_tab <- xtabs(~ fulltime_res + homeformation + awayformation,
 	matchstats)
 (ft_form_tab <- ft_form_tab[, names(homefm_tab[1:4]),
 	names(awayfm_tab[1:4])])
-(ft_form_proptab <- prop.table(ft_form_tab, 2:3))   ## proportions
+## proportions
+(ft_form_proptab <- prop.table(ft_form_tab, 2:3))
+apply(ft_form_proptab, 1, mean)
 
 ##### PER-SEASON AND PER-MATCH AVERAGES AT TEAM LEVEL #####
 
