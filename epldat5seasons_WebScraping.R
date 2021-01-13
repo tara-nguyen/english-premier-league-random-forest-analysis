@@ -37,13 +37,14 @@ for (i in 1:n_seasons) {
 }
 
 ## function for obtaining match statistics from webpages
+## i: integer from 1 to n_seasons; index for season
+## j: integer from 1 to n_games_per_season; index for game within a season
 
 getmatchstats <- function(i, j, dat) {
 	## get url link for match report
 	
-	match_url <- unlist(regmatches(readcon[[i]], 
-		regexec('/en/matches/(.{8})/(.+?)Premier-League', readcon[[i]])))
-	match_url <- grep('/', match_url, value = T)[j]
+	match_url <- regmatches(readcon[[i]], 
+		regexpr('/en/matches/(.{8})/(.+?)Premier-League', readcon[[i]]))[j]
 	
 	## read webpage for match report and get match stats
 	
@@ -66,7 +67,7 @@ getmatchstats <- function(i, j, dat) {
 	## at full time
 	
 	score <- grep('color:#777', readcon, value = T)
-	score <- unlist(regmatches(score, regexec('[0-9]:[0-9]', score)))
+	score <- regmatches(score, regexpr('[0-9]:[0-9]', score))
 	ftscore <- score[length(score)]
 	ftscore <- as.numeric(unlist(strsplit(ftscore, ':')))
 	dat$fulltime_res[rowindex] <- 
@@ -78,7 +79,7 @@ getmatchstats <- function(i, j, dat) {
 	## which team scored first
 	
 	if (sum(ftscore) > 0) {
-		scoredfirst <- unlist(regmatches(score, regexec('1:0|0:1', score)))
+		scoredfirst <- regmatches(score, regexpr('1:0|0:1', score))
 		scoredfirst <- as.numeric(strsplit(scoredfirst, ':')[[1]])
 		scoredfirst <- which(scoredfirst == 1)
 		if (scoredfirst == 1) {
@@ -91,7 +92,7 @@ getmatchstats <- function(i, j, dat) {
 	## result and goal difference at half-time
 	
 	minute <- grep('&rsquor;$', readcon, value = T)
-	minute <- unlist(regmatches(minute, regexec('[0-9]{1,2}', minute)))
+	minute <- regmatches(minute, regexpr('[0-9]{1,2}', minute))
 	if (sum(minute < 46) > 0) {
 		htscore <- unlist(strsplit(score[max(which(minute < 46))], ':'))
 		htscore <- as.numeric(htscore)
@@ -105,8 +106,8 @@ getmatchstats <- function(i, j, dat) {
 	
 	## team formation
 	
-	formation <- unlist(regmatches(readcon, 
-		regexec('[(]([0-9]-){1,}[0-9](.+?)[)]', readcon)))[c(1, 4)]
+	formation <- regmatches(readcon, 
+		regexpr('[(]([0-9]-){1,}[0-9](.+?)[)]', readcon))
 	formation <- unlist(strsplit(formation, '[()]'))[c(2, 4)]
 	dat$homeformation[rowindex] <- formation[1]
 	dat$awayformation[rowindex] <- formation[2]
@@ -126,8 +127,8 @@ getmatchstats <- function(i, j, dat) {
 	
 	passing <- readcon[grep('<th colspan="2">Passing', readcon):
 		(grep('<th colspan="2">Shots on Target', readcon)-1)]
-	passing <- unlist(regmatches(passing, 
-		regexec('[0-9]{1,} of [0-9]{1,}', passing)))
+	passing <- regmatches(passing, 
+		regexpr('[0-9]{1,} of [0-9]{1,}', passing))
 	passing <- as.numeric(unlist(strsplit(passing, ' of ')))
 	dat$homepasses[rowindex] <- passing[2]
 	if (passing[2] > 0) {
@@ -146,8 +147,7 @@ getmatchstats <- function(i, j, dat) {
 	
 	shots <- readcon[grep('<th colspan="2">Shots on Target', readcon):
 		(grep('<th colspan="2">Saves', readcon)-1)]
-	shots <- unlist(regmatches(shots, 
-		regexec('[0-9]{1,} of [0-9]{1,}', shots)))
+	shots <- regmatches(shots, regexpr('[0-9]{1,} of [0-9]{1,}', shots))
 	shots <- as.numeric(unlist(strsplit(shots, ' of ')))
 	dat$homeshots[rowindex] <- shots[2]
 	if (shots[2] > 0) {
@@ -166,8 +166,7 @@ getmatchstats <- function(i, j, dat) {
 	
 	saves <- readcon[grep('<th colspan="2">Saves', readcon):
 		(grep('<th colspan="2">Cards', readcon)-1)]
-	saves <- unlist(regmatches(saves, 
-		regexec('[0-9]{1,} of [0-9]{1,}', saves)))
+	saves <- regmatches(saves, regexpr('[0-9]{1,} of [0-9]{1,}', saves))
 	saves <- as.numeric(unlist(strsplit(saves, ' of '))[c(1, 3)])
 	if (shots[3] > 0) {
 		dat$homesaves[rowindex] <- saves[1] / shots[3]
@@ -182,22 +181,21 @@ getmatchstats <- function(i, j, dat) {
 	
 	## numbers of tackles, interceptions, and clearances
 	
-	tackles <- unlist(regmatches(readcon, 
-		regexec('[0-9]{1,}(.+?)Tackles\\1[0-9]{1,}', readcon)))
-	tackles <- unlist(strsplit(tackles, 
-		'</div><div>Tackles</div><div>'))[1:2]
+	tackles <- regmatches(readcon, 
+		regexpr('[0-9]{1,}(.+?)Tackles\\1[0-9]{1,}', readcon))
+	tackles <- unlist(strsplit(tackles, '</div><div>Tackles</div><div>'))
 	tackles <- as.numeric(tackles)
 	
-	interceptions <- unlist(regmatches(readcon, 
-		regexec('[0-9]{1,}(.+?)Interceptions\\1[0-9]{1,}', readcon)))
+	interceptions <- regmatches(readcon, 
+		regexpr('[0-9]{1,}(.+?)Interceptions\\1[0-9]{1,}', readcon))
 	interceptions <- unlist(strsplit(interceptions, 
-		'</div><div>Interceptions</div><div>'))[1:2]
+		'</div><div>Interceptions</div><div>'))
 	interceptions <- as.numeric(interceptions)
 	
-	clearances <- unlist(regmatches(readcon, 
-		regexec('[0-9]{1,}(.+?)Clearances\\1[0-9]{1,}', readcon)))
+	clearances <- regmatches(readcon, 
+		regexpr('[0-9]{1,}(.+?)Clearances\\1[0-9]{1,}', readcon))
 	clearances <- unlist(strsplit(clearances, 
-		'</div><div>Clearances</div><div>'))[1:2]
+		'</div><div>Clearances</div><div>'))
 	clearances <- as.numeric(clearances)
 	
 	## defense is defined as the sum of the numbers of tackles,
@@ -210,9 +208,9 @@ getmatchstats <- function(i, j, dat) {
 	
 	## number of fouls
 	
-	fouls <- unlist(regmatches(readcon, 
-		regexec('[0-9]{1,}(.+?)Fouls\\1[0-9]{1,}', readcon)))
-	fouls <- unlist(strsplit(fouls, '</div><div>Fouls</div><div>'))[1:2]
+	fouls <- regmatches(readcon, 
+		regexpr('[0-9]{1,}(.+?)Fouls\\1[0-9]{1,}', readcon))
+	fouls <- unlist(strsplit(fouls, '</div><div>Fouls</div><div>'))
 	fouls <- as.numeric(fouls)
 	
 	## numbers of cards (i.e., bookings for fouls)
@@ -267,8 +265,8 @@ nrow(matchstats) == n_games_per_season * n_seasons   ## TRUE
 
 i <- 1; j1 <- 1; incre <- 19   ## run this line only once
 
-## keep running this for loop until matchstats has been filled out completely
-## (i.e., until i == length(fixturelist_urlfull) & j == n_games_per_season)
+## keep running this for loop until the matchstats data frame has been filled out completely
+## (i.e., until i == n_seasons & j == n_games_per_season)
 for (j in j1:(j1+incre)) {
 	matchstats <- getmatchstats(i, j, matchstats)
 	if (j == j1 + incre) {
@@ -304,4 +302,4 @@ for (col in 1:ncol(matchstats)) {
 
 ## write to csv file
 
-write.csv(matchstats, row.names = F, file = 'matchstats.csv')
+write.csv(matchstats, row.names = F, file = 'epldat5seasons/matchstats.csv')
