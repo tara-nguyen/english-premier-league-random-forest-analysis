@@ -1,6 +1,6 @@
 # Analysis of Match Statistics and Team Performances in the Premier League From Season 2015/16 to Season 2019/20
 
-- AUTHOR: [**TARA NGUYEN**](https://www.linkedin.com/in/nguyenthuyanh/)
+- AUTHOR: [**TARA NGUYEN**](https://www.linkedin.com/in/taranguyen264/)
 - Final project for the course *Introduction to Data Science* at UCLA Extension
 - Completed in December 2020
 
